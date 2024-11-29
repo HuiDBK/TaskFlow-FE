@@ -1,0 +1,93 @@
+{
+  "app": {
+    "title": "Task Flow"
+  },
+  "common": {
+    "projects": "Projects",
+    "tasks": "Tasks",
+    "listView": "List View",
+    "ganttView": "Gantt View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "backToProjects": "Back to Projects",
+    "allPriorities": "All Priorities",
+    "advancedFilters": "Advanced Filters",
+    "tag": "Tag",
+    "allTags": "All Tags",
+    "date": "Date",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "selectDate": "Select Date",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "allStatuses": "All Statuses",
+    "status": {
+      "todo": "To Do",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "loginWithGithub": "Login with GitHub",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email",
+    "phone": "Phone",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?"
+  },
+  "project": {
+    "title": "Title",
+    "newProject": "New Project",
+    "editProject": "Edit Project",
+    "description": "Description",
+    "priority": "Priority",
+    "status": "Status",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "tags": "Tags",
+    "tagName": "Tag Name",
+    "addTag": "Add tag",
+    "noProjects": "No projects found",
+    "createFirst": "Get started by creating a new project"
+  },
+  "task": {
+    "title": "Title",
+    "newTask": "New Task",
+    "editTask": "Edit Task",
+    "description": "Description",
+    "priority": "Priority",
+    "status": "Status",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "tags": "Tags",
+    "addTag": "Add tag",
+    "noTasks": "No tasks found",
+    "createFirst": "Get started by creating a new task"
+  },
+  "dashboard": {
+    "ganttDashboard": "Gantt Dashboard",
+    "projectsTimeline": "Projects Timeline",
+    "tasksTimeline": "Tasks Timeline",
+    "noTasks": "No tasks to display",
+    "createFirst": "Add some tasks to see them in the Gantt chart."
+  },  
+  "user": {
+    "profile": "User Profile",
+    "settings": "Settings",
+    "language": "Language",
+    "english": "English",
+    "chinese": "中文"
+  }
+}

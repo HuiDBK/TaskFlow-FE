@@ -1,0 +1,93 @@
+{
+  "app": {
+    "title": "任务管理系统"
+  },
+  "common": {
+    "projects": "项目总览",
+    "tasks": "任务总览",
+    "listView": "列表视图",
+    "ganttView": "甘特图",
+    "edit": "编辑",
+    "delete": "删除",
+    "cancel": "取消",
+    "save": "保存",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "backToProjects": "返回项目",
+    "allPriorities": "所有优先级",
+    "advancedFilters": "高级筛选",
+    "tag": "标签",
+    "allTags": "所有标签",
+    "date": "日期",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "selectDate": "选择日期",
+    "priority": {
+      "high": "高",
+      "medium": "中",
+      "low": "低"
+    },
+    "allStatuses": "所有状态",
+    "status": {
+      "todo": "待办",
+      "inProgress": "进行中",
+      "completed": "已完成"
+    }
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "logout": "退出登录",
+    "loginWithGithub": "使用 GitHub 登录",
+    "username": "用户名",
+    "password": "密码",
+    "email": "邮箱",
+    "phone": "手机号",
+    "alreadyHaveAccount": "已有账号？",
+    "dontHaveAccount": "没有账号？"
+  },
+  "project": {
+    "title": "项目标题",
+    "newProject": "新建项目",
+    "editProject": "编辑项目",
+    "description": "项目描述",
+    "priority": "项目优先级",
+    "status": "项目状态",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "tags": "标签",
+    "tagName": "标签名称",
+    "addTag": "添加标签",
+    "noProjects": "暂无项目",
+    "createFirst": "创建你的第一个项目"
+  },
+  "task": {
+    "title": "任务标题",
+    "newTask": "新建任务",
+    "editTask": "编辑任务",
+    "description": "任务描述",
+    "priority": "任务优先级",
+    "status": "任务状态",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "tags": "标签",
+    "addTag": "添加标签",
+    "noTasks": "暂无任务",
+    "createFirst": "创建你的第一个任务"
+  },
+  "dashboard": {
+    "ganttDashboard": "甘特图总览",
+    "projectsTimeline": "项目时间线",
+    "tasksTimeline": "任务时间线",
+    "noTasks": "暂无任务",
+    "createFirst": "添加一些任务以在甘特图中看到它们"
+  },
+  "user": {
+    "profile": "用户中心",
+    "settings": "设置",
+    "language": "语言",
+    "english": "English",
+    "chinese": "中文"
+  }
+}
