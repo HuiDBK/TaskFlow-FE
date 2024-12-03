@@ -7,33 +7,33 @@ import { t } from 'i18next';
 
 interface ProjectFormProps {
   project?: IProject | null;
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
   onCancel: () => void;
 }
 
 export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onCancel }) => {
-  const [title, setTitle] = useState(project?.title || '');
-  const [description, setDescription] = useState(project?.description || '');
-  const [priority, setPriority] = useState(project?.priority || 'medium');
-  const [startDate, setStartDate] = useState(
-    project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : ''
+  const [project_name, setTitle] = useState(project?.project_name || '');
+  const [project_desc, setDescription] = useState(project?.project_desc || '');
+  const [project_priority, setPriority] = useState(project?.project_priority || 'medium');
+  const [start_time, setStartDate] = useState(
+    project?.start_time ? new Date(project.start_time).toISOString().split('T')[0] : ''
   );
-  const [endDate, setEndDate] = useState(
-    project?.endDate ? new Date(project.endDate).toISOString().split('T')[0] : ''
+  const [end_time, setEndDate] = useState(
+    project?.end_time ? new Date(project.end_time).toISOString().split('T')[0] : ''
   );
-  const [tags, setTags] = useState<ITag[]>(project?.tags || []);
+  const [tags, setTags] = useState<ITag[]>(project?.project_tags || []);
   const [newTag, setNewTag] = useState('');
   const [tagColor, setTagColor] = useState('#3B82F6');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const projectData = {
-      title,
-      description,
-      priority,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      tags
+      project_name,
+      project_desc,
+      project_priority,
+      start_time: new Date(start_time),
+      end_time: new Date(end_time),
+      project_tags: tags
     };
 
     try {
@@ -42,7 +42,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
       } else {
         await createProject(projectData);
       }
-      onSubmit();
+      await onSubmit();
     } catch (error) {
       console.error('Failed to save project:', error);
     }
@@ -70,7 +70,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('project.title')}</label>
                 <input
                   type="text"
-                  value={title}
+                  value={project_name}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-2 h-8 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
@@ -79,7 +79,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('project.description')}</label>
                 <textarea
-                  value={description}
+                  value={project_desc}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   rows={3}
@@ -88,7 +88,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('project.priority')}</label>
                 <select
-                  value={priority}
+                  value={project_priority}
                   onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
@@ -100,13 +100,13 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DateInput
                   label={t('project.startDate')}
-                  value={startDate}
+                  value={start_time}
                   onChange={setStartDate}
                   required
                 />
                 <DateInput
                   label={t('project.endDate')}
-                  value={endDate}
+                  value={end_time}
                   onChange={setEndDate}
                   required
                 />
@@ -118,7 +118,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
                     type="text"
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="flex-1 px-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder={t('project.tagName')}
                   />
                   <input

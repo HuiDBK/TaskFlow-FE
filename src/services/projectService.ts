@@ -8,8 +8,8 @@ export const projectService = {
   createProject: (project: Partial<IProject>) =>
     axiosInstance.post('/v1/projects', project),
     
-  updateProject: (project: Partial<IProject>) =>
-    axiosInstance.put(`/v1/projects`, project),
+  updateProject: (id: number, project: Partial<IProject>) =>
+    axiosInstance.put(`/v1/projects/${id}`, project),
     
   deleteProject: (project_ids: number[]) =>
     axiosInstance.delete(`/v1/projects`, { data: { project_ids } }),

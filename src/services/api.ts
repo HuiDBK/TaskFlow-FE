@@ -40,11 +40,12 @@ export const getProjects = async () => {
 export const createProject = (project: Partial<IProject>) => 
   projectService.createProject(project);
 
-export const updateProject = (id: number, project: Partial<IProject>) => 
-  projectService.updateProject(id, project);
+export const updateProject = async (id: number, project: Partial<IProject>) => {
+  return await projectService.updateProject(id, project);
+}
 
 export const deleteProject = (id: number) => 
-  projectService.deleteProject(id);
+  projectService.deleteProject([id]);
 
 // Task APIs
 export const getTasks = async (projectId: number) => {

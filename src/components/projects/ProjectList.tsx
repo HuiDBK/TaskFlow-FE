@@ -58,9 +58,7 @@ export const ProjectList: React.FC = () => {
   const handlePriorityChange = async (projectId: number, newPriority: 'low' | 'medium' | 'high') => {
     try {
       await updateProject(projectId, { project_priority: newPriority });
-      setProjects(projects.map(project => 
-        project.id === projectId ? { ...project, priority: newPriority } : project
-      ));
+      await loadProjects();
     } catch (error) {
       console.error('Failed to update priority:', error);
     }
@@ -197,10 +195,10 @@ export const ProjectList: React.FC = () => {
       {showForm && (
         <ProjectForm
           project={selectedProject}
-          onSubmit={() => {
+          onSubmit={async () => {
+            await loadProjects();
             setShowForm(false);
             setSelectedProject(null);
-            loadProjects();
           }}
           onCancel={() => {
             setShowForm(false);

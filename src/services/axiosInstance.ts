@@ -33,6 +33,9 @@ axiosInstance.interceptors.response.use(
     
     if (error.response) {
       errorMessage = error.response.data.message;
+
+    } else if (error.response.status === 500) {
+      errorMessage = '服务器异常，请稍后再试';
     } else if (error.request) {
       errorMessage = '网络错误，请检查网络连接';
     } else {
