@@ -1,6 +1,6 @@
 // src/components/tasks/TaskList.tsx
 import React, { useEffect, useState } from 'react';
-import { getTasks, deleteTask } from '../../services/api';
+import { getTasks, deleteTask, updateTask } from '../../services/api';
 import { ITask } from '../../types';
 import { TaskForm } from './TaskForm';
 import { GanttChart } from './GanttChart';
@@ -8,6 +8,8 @@ import { EnhancedPagination } from '../common/EnhancedPagination';
 import { LayoutControl, LayoutType } from '../common/LayoutControl';
 import { SearchFilterAdvanced } from '../common/SearchFilterAdvanced';
 import { t } from 'i18next';
+import { TaskFilters } from '../../services/taskService';
+import { QuickEditMenu } from '../common/QuickEditMenu';
 
 const TASKS_PER_PAGE = 6;
 
@@ -17,7 +19,7 @@ interface TaskListProps {
 
 export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
   const [tasks, setTasks] = useState<ITask[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<ITask[]>([]);
+  const [total, setTotalTasks] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ITask | null>(null);
   const [view, setView] = useState<'list' | 'gantt'>('list');
@@ -29,70 +31,50 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
-  const [tagFilter, setTagFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [startTimeFilter, setStartTimeFilter] = useState('');
+  const [endTimeFilter, setEndTimeFilter] = useState('');
 
   useEffect(() => {
-    loadTasks();
-  }, [projectId]);
+    const shouldLoadTasks = () => {
+      if (searchTerm || priorityFilter || statusFilter) return true;
+      if (startTimeFilter && endTimeFilter) return true;
+      if (!searchTerm && !priorityFilter && !statusFilter && !startTimeFilter && !endTimeFilter) return true;
+      return false;
+    };
 
-  useEffect(() => {
-    filterTasks();
-  }, [tasks, searchTerm, priorityFilter, tagFilter, dateFilter, statusFilter]);
+    if (shouldLoadTasks()) {
+      console.log('loadTasks');
+      loadTasks();
+    }
+  }, [searchTerm, priorityFilter, statusFilter,startTimeFilter, endTimeFilter, currentPage]);
 
   const loadTasks = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getTasks(projectId);
-      setTasks(response.data || []);
-      setFilteredTasks(response.data || []);
+
+      const filters: TaskFilters = {};
+      if (searchTerm) filters.task_name = searchTerm;
+      if (priorityFilter) filters.task_priority = priorityFilter;
+      if (statusFilter) filters.task_status = statusFilter;
+      if (startTimeFilter && endTimeFilter) {
+        filters.start_time = startTimeFilter;
+        filters.end_time = endTimeFilter;
+      }
+      filters.current_page = currentPage;
+      filters.page_size = TASKS_PER_PAGE;
+
+      const { total, tasks } = await getTasks(projectId, filters);
+      setTotalTasks(total);
+      setTasks(tasks || []);
     } catch (error) {
       console.error('Failed to load tasks:', error);
       setError('Failed to load tasks. Please try again later.');
       setTasks([]);
-      setFilteredTasks([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const filterTasks = () => {
-    let filtered = [...tasks];
-
-    if (searchTerm) {
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (priorityFilter) {
-      filtered = filtered.filter(task => task.priority === priorityFilter);
-    }
-
-    if (tagFilter) {
-      filtered = filtered.filter(task =>
-        task.tags.some(tag => tag.name === tagFilter)
-      );
-    }
-
-    if (dateFilter) {
-      const filterDate = new Date(dateFilter);
-      filtered = filtered.filter(task => {
-        const startDate = new Date(task.startDate);
-        const endDate = new Date(task.endDate);
-        return startDate <= filterDate && filterDate <= endDate;
-      });
-    }
-
-    if (statusFilter) {
-      filtered = filtered.filter(task => task.status === statusFilter);
-    }
-
-    setFilteredTasks(filtered);
-    setCurrentPage(1);
   };
 
   const handleDelete = async (taskId: number) => {
@@ -109,8 +91,8 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'in-progress': return 'bg-blue-100 text-blue-800';
-      case 'todo': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'todo': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-yellow-100 text-yellow-800';
     }
   };
 
@@ -132,13 +114,27 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
     }
   };
 
-  // Get all unique tags from tasks
-  const allTags = Array.from(new Set(tasks.flatMap(task => task.tags)));
+  const totalPages = Math.ceil(total / TASKS_PER_PAGE);
 
-  const totalPages = Math.ceil(filteredTasks.length / TASKS_PER_PAGE);
-  const startIndex = (currentPage - 1) * TASKS_PER_PAGE;
-  const endIndex = startIndex + TASKS_PER_PAGE;
-  const currentTasks = filteredTasks.slice(startIndex, endIndex);
+  const handleStatusChange = async (taskId: number, newStatus: 'completed' | 'inProgress' | 'todo') => {
+    try {
+      await updateTask(projectId, taskId, { task_status: newStatus });
+      await loadTasks();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      setError('Failed to update task status');
+    }
+  };
+
+  const handlePriorityChange = async (taskId: number, newPriority: 'low' | 'medium' | 'high') => {
+    try {
+      await updateTask(projectId, taskId, { task_priority: newPriority });
+      await loadTasks();
+    } catch (error) {
+      console.error('Failed to update priority:', error);
+      setError('Failed to update task priority');
+    }
+  };
 
   if (loading) {
     return (
@@ -204,22 +200,35 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
       </div>
 
       <SearchFilterAdvanced
-        tags={allTags}
         onSearch={setSearchTerm}
         onFilterPriority={setPriorityFilter}
-        onFilterTag={setTagFilter}
-        onFilterDate={setDateFilter}
         onFilterStatus={setStatusFilter}
+        onFilterDate={(start, end) => {
+          setStartTimeFilter(start);
+          setEndTimeFilter(end);
+        }}
+        onReset={() => {
+          setSearchTerm('');
+          setPriorityFilter('');
+          setStatusFilter('');
+          setStartTimeFilter('');
+          setEndTimeFilter('');
+        }}
+        searchTerm={searchTerm}
+        priorityFilter={priorityFilter}
+        statusFilter={statusFilter}
+        startTimeFilter={startTimeFilter}
+        endTimeFilter={endTimeFilter}
       />
 
       {showForm && (
         <TaskForm
           projectId={projectId}
           task={selectedTask}
-          onSubmit={() => {
+          onSubmit={async () => {
             setShowForm(false);
             setSelectedTask(null);
-            loadTasks();
+            await loadTasks();
           }}
           onCancel={() => {
             setShowForm(false);
@@ -230,7 +239,7 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
 
       {view === 'gantt' ? (
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <GanttChart tasks={filteredTasks} />
+          <GanttChart tasks={tasks} />
         </div>
       ) : (
         <>
@@ -238,14 +247,13 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
             <LayoutControl currentLayout={layout} onLayoutChange={setLayout} />
           </div>
           
-          {filteredTasks.length === 0 ? (
+          {tasks.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg shadow-md">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <h3 className="mt-2 text-lg font-medium text-gray-900">No tasks found</h3>
-              <p className="mt-1 text-gray-500">Get started by creating a new task.</p>
+              <h3 className="mt-2 text-lg font-medium text-gray-900">{t('task.noTasks')}</h3>
               <button
                 onClick={() => setShowForm(true)}
                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
@@ -256,21 +264,36 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
           ) : (
             <>
               <div className={`grid ${getLayoutClass(layout)} gap-6`}>
-                {currentTasks.map((task) => (
+                {tasks.map((task) => (
                   <div 
                     key={task.id} 
-                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden relative"
                   >
+                    <div className="absolute -left-1.5 -top-0.5">
+                      <QuickEditMenu
+                        type="status"
+                        currentValue={task.task_status}
+                        onSelect={(value) => handleStatusChange(task.id, value as 'todo' | 'inProgress' | 'completed')}
+                        onClick={(e) => e.stopPropagation()}
+                        showDropdownIcon={false}
+                      />
+                    </div>
                     <div className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">{task.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(task.status)}`}>
-                          {getStatusDisplay(task.status)}
-                        </span>
+                      <div className="flex justify-between items-start mb-4 mt-2">
+                        <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">{task.task_name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <QuickEditMenu
+                            type="priority"
+                            currentValue={task.task_priority}
+                            onSelect={(value) => handlePriorityChange(task.id, value as 'low' | 'medium' | 'high')}
+                            onClick={(e) => e.stopPropagation()}
+                            showDropdownIcon={true}
+                          />
+                        </div>
                       </div>
-                      <p className="text-gray-600 mb-4 line-clamp-3">{task.description}</p>
+                      <p className="text-gray-600 mb-4 line-clamp-3">{task.task_desc}</p>
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {task.tags?.map((tag) => (
+                        {task.task_tags?.map((tag) => (
                           <span
                             key={tag.id}
                             className="px-2 py-1 rounded-full text-sm font-medium"
@@ -282,7 +305,7 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
                       </div>
                       <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
                         <div className="text-sm text-gray-500">
-                          {new Date(task.startDate).toLocaleDateString()} - {new Date(task.endDate).toLocaleDateString()}
+                          {task.start_time ? new Date(task.start_time).toLocaleDateString() : '-'} - {task.end_time ? new Date(task.end_time).toLocaleDateString() : '-'}
                         </div>
                         <div className="flex space-x-3">
                           <button

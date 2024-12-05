@@ -1,4 +1,5 @@
 // src/components/common/EnhancedPagination.tsx
+import { t } from 'i18next';
 import React, { useState } from 'react';
 
 interface EnhancedPaginationProps {
@@ -51,7 +52,7 @@ export const EnhancedPagination: React.FC<EnhancedPaginationProps> = ({
             : 'bg-blue-500 text-white hover:bg-blue-600'
         } transition-colors`}
       >
-        Previous
+        {t('common.previous')}
       </button>
 
       <div className="flex space-x-1">
@@ -83,7 +84,7 @@ export const EnhancedPagination: React.FC<EnhancedPaginationProps> = ({
             : 'bg-blue-500 text-white hover:bg-blue-600'
         } transition-colors`}
       >
-        Next
+        {t('common.next')}
       </button>
 
       <form onSubmit={handlePageSubmit} className="flex items-center space-x-2">
@@ -93,14 +94,14 @@ export const EnhancedPagination: React.FC<EnhancedPaginationProps> = ({
           max={totalPages}
           value={inputPage}
           onChange={handlePageInput}
-          placeholder="Page"
-          className="w-16 px-2 py-1 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          placeholder={t('common.page')}
+          className="w-20 px-2 py-1 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
         <button
           type="submit"
           className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
-          Go
+          {t('common.go')}
         </button>
       </form>
     </div>

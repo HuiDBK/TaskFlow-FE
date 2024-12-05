@@ -23,15 +23,14 @@ export const GanttDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // Load projects
-      const projectsResponse = await getProjects();
-      const loadedProjects = projectsResponse.data || [];
+      // Load projects(max 6)
+      const {projects: loadedProjects} = await getProjects({page_size: 6});
       setProjects(loadedProjects);
 
       // Load tasks for all projects
       const tasksPromises = loadedProjects.map(project => getTasks(project.id));
       const tasksResponses = await Promise.all(tasksPromises);
-      const allLoadedTasks = tasksResponses.flatMap(response => response.data || []);
+      const allLoadedTasks = tasksResponses.flatMap(response => response.tasks || []);
       setAllTasks(allLoadedTasks);
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -110,14 +109,14 @@ export const GanttDashboard: React.FC = () => {
           <h3 className="text-xl font-semibold mb-4">{t('dashboard.projectsTimeline')}</h3>
           <GanttChart tasks={projects.map(project => ({
             id: project.id,
-            projectId: 0,
-            title: project.title,
-            description: project.description,
-            startDate: project.startDate,
-            endDate: project.endDate,
-            status: 'in-progress',
-            tags: project.tags,
-            priority: project.priority
+            project_id: 0,
+            task_name: project.project_name,
+            task_desc: project.project_desc,
+            start_time: project.start_time,
+            end_time: project.end_time,
+            task_status: project.project_status,
+            task_tags: project.project_tags,
+            task_priority: project.project_priority
           }))} />
         </div>
       ) : (

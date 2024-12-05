@@ -14,6 +14,8 @@
     "create": "Create",
     "search": "Search",
     "filter": "Filter",
+    "reset": "Reset",
+    "retry": "Retry",
     "backToProjects": "Back to Projects",
     "allPriorities": "All Priorities",
     "advancedFilters": "Advanced Filters",
@@ -33,7 +35,11 @@
       "todo": "To Do",
       "inProgress": "In Progress",
       "completed": "Completed"
-    }
+    },
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "go": "Go"
   },
   "auth": {
     "login": "Login",
@@ -81,7 +87,9 @@
     "projectsTimeline": "Projects Timeline",
     "tasksTimeline": "Tasks Timeline",
     "noTasks": "No tasks to display",
-    "createFirst": "Add some tasks to see them in the Gantt chart."
+    "createFirst": "Add some tasks to see them in the Gantt chart.",
+    "priority": "Priority",
+    "status": "Status"
   },  
   "user": {
     "profile": "User Profile",

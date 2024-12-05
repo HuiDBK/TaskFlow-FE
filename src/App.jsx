@@ -9,7 +9,11 @@ import { GanttDashboard } from './components/dashboard/GanttDashboard';
 import { Header } from './components/common/Header';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // 初始化时检查 localStorage 中是否存在有效的 token
+    const token = localStorage.getItem('token');
+    return !!token;
+  });
   const [showRegister, setShowRegister] = useState(false);
 
   if (!isAuthenticated) {
@@ -57,12 +61,12 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Header onLogout={() => {
           localStorage.removeItem('token');
-          localStorage.removeItem('user');
           setIsAuthenticated(false);
         }} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-16">
           <Routes>
             <Route path="/" element={<Navigate to="/projects" replace />} />
+            <Route path="/login" element={<LoginForm />} />
             <Route path="/projects" element={<ProjectList />} />
             <Route path="/projects/:projectId" element={<ProjectDetail />} />
             <Route path="/gantt" element={<GanttDashboard />} />

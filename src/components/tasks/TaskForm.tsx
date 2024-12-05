@@ -8,35 +8,37 @@ import { t } from 'i18next';
 interface TaskFormProps {
   projectId: number;
   task?: ITask | null;
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
   onCancel: () => void;
 }
 
 export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, onCancel }) => {
-  const [title, setTitle] = useState(task?.title || '');
-  const [description, setDescription] = useState(task?.description || '');
-  const [priority, setPriority] = useState(task?.priority || 'medium');
-  const [status, setStatus] = useState(task?.status || 'todo');
-  const [startDate, setStartDate] = useState(
-    task?.startDate ? new Date(task.startDate).toISOString().split('T')[0] : ''
+  const [task_name, setTaskName] = useState(task?.task_name || '');
+  const [task_desc, setTaskDesc] = useState(task?.task_desc || '');
+  const [task_priority, setTaskPriority] = useState(task?.task_priority || 'medium');
+  const [task_status, setTaskStatus] = useState(task?.task_status || 'todo');
+  const [start_time, setStartDate] = useState(
+    task?.start_time ? new Date(task.start_time).toISOString().split('T')[0] : ''
   );
-  const [endDate, setEndDate] = useState(
-    task?.endDate ? new Date(task.endDate).toISOString().split('T')[0] : ''
+  const [end_time, setEndDate] = useState(
+    task?.end_time ? new Date(task.end_time).toISOString().split('T')[0] : ''
   );
-  const [tags, setTags] = useState<ITag[]>(task?.tags || []);
+  const [task_tags, setTaskTags] = useState<ITag[]>(task?.task_tags || []);
   const [newTag, setNewTag] = useState('');
   const [tagColor, setTagColor] = useState('#3B82F6');
+  const [editingTagId, setEditingTagId] = useState<number | null>(null);
+  const [editingTagName, setEditingTagName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const taskData = {
-      title,
-      description,
-      priority,
-      status,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      tags,
+      task_name,
+      task_desc,
+      task_priority,
+      task_status,
+      start_time: new Date(start_time),
+      end_time: new Date(end_time),
+      task_tags,
     };
 
     try {
@@ -53,9 +55,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
 
   const addTag = () => {
     if (newTag.trim()) {
-      setTags([...tags, { id: Date.now(), name: newTag.trim(), color: tagColor }]);
+      setTaskTags([...task_tags, { id: Date.now(), name: newTag.trim(), color: tagColor }]);
       setNewTag('');
     }
+  };
+
+  const removeTag = (tagId: number) => {
+    setTaskTags(task_tags.filter(tag => tag.id !== tagId));
   };
 
   return (
@@ -73,8 +79,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('task.title')}</label>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={task_name}
+                  onChange={(e) => setTaskName(e.target.value)}
                   className="w-full px-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
@@ -82,8 +88,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('task.description')}</label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={task_desc}
+                  onChange={(e) => setTaskDesc(e.target.value)}
                   className="w-full px-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   rows={3}
                 />
@@ -92,8 +98,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('task.priority')}</label>
                   <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
+                    value={task_priority}
+                    onChange={(e) => setTaskPriority(e.target.value as 'low' | 'medium' | 'high')}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="low">{t('common.priority.low')}</option>
@@ -104,12 +110,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('task.status')}</label>
                   <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as 'todo' | 'in-progress' | 'completed')}
+                    value={task_status}
+                    onChange={(e) => setTaskStatus(e.target.value as 'todo' | 'inProgress' | 'completed')}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="todo">{t('common.status.todo')}</option>
-                    <option value="in-progress">{t('common.status.inProgress')}</option>
+                    <option value="inProgress">{t('common.status.inProgress')}</option>
                     <option value="completed">{t('common.status.completed')}</option>
                   </select>
                 </div>
@@ -117,13 +123,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DateInput
                   label={t('common.startDate')}
-                  value={startDate}
+                  value={start_time}
                   onChange={setStartDate}
                   required
                 />
                 <DateInput
                   label={t('common.endDate')}
-                  value={endDate}
+                  value={end_time}
                   onChange={setEndDate}
                   required
                 />
@@ -153,13 +159,51 @@ export const TaskForm: React.FC<TaskFormProps> = ({ projectId, task, onSubmit, o
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
+                  {task_tags.map((tag) => (
                     <span
                       key={tag.id}
-                      className="px-2 py-1 rounded-full text-sm"
+                      className="px-2 py-1 rounded-full text-sm relative group"
                       style={{ backgroundColor: tag.color + '20', color: tag.color }}
                     >
-                      {tag.name}
+                      {editingTagId === tag.id ? (
+                        <input
+                          type="text"
+                          value={editingTagName}
+                          onChange={(e) => setEditingTagName(e.target.value)}
+                          className="w-20 px-1 text-black rounded border-gray-300"
+                          onBlur={() => {
+                            setTaskTags(task_tags.map(t => 
+                              t.id === tag.id ? { ...t, name: editingTagName } : t
+                            ));
+                            setEditingTagId(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              setTaskTags(task_tags.map(t => 
+                                t.id === tag.id ? { ...t, name: editingTagName } : t
+                              ));
+                              setEditingTagId(null);
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          onClick={() => {
+                            setEditingTagId(tag.id);
+                            setEditingTagName(tag.name);
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => removeTag(tag.id)}
+                        className="absolute -top-1 -right-1 hidden group-hover:block bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                        type="button"
+                      >
+                        ×
+                      </button>
                     </span>
                   ))}
                 </div>

@@ -7,7 +7,7 @@ import { t } from 'i18next';
 
 interface ProjectFormProps {
   project?: IProject | null;
-  onSubmit: () => Promise<void>;
+  onSubmit: (project?: IProject) => void;
   onCancel: () => void;
 }
 
@@ -15,6 +15,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
   const [project_name, setTitle] = useState(project?.project_name || '');
   const [project_desc, setDescription] = useState(project?.project_desc || '');
   const [project_priority, setPriority] = useState(project?.project_priority || 'medium');
+  const [project_status, setStatus] = useState(project?.project_status || 'todo');
   const [start_time, setStartDate] = useState(
     project?.start_time ? new Date(project.start_time).toISOString().split('T')[0] : ''
   );
@@ -24,6 +25,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
   const [tags, setTags] = useState<ITag[]>(project?.project_tags || []);
   const [newTag, setNewTag] = useState('');
   const [tagColor, setTagColor] = useState('#3B82F6');
+  const [editingTagId, setEditingTagId] = useState<number | null>(null);
+  const [editingTagName, setEditingTagName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +34,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
       project_name,
       project_desc,
       project_priority,
+      project_status,
       start_time: new Date(start_time),
       end_time: new Date(end_time),
       project_tags: tags
@@ -42,7 +46,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
       } else {
         await createProject(projectData);
       }
-      await onSubmit();
+      await onSubmit(projectData as IProject);
     } catch (error) {
       console.error('Failed to save project:', error);
     }
@@ -53,6 +57,10 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
       setTags([...tags, { id: Date.now(), name: newTag.trim(), color: tagColor }]);
       setNewTag('');
     }
+  };
+
+  const removeTag = (tagId: number) => {
+    setTags(tags.filter(tag => tag.id !== tagId));
   };
 
   return (
@@ -97,15 +105,21 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
                   <option value="high">{t('common.priority.high')}</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('project.status')}</label>
+                <select
+                  value={project_status}
+                  onChange={(e) => setStatus(e.target.value as 'todo' | 'inProgress' | 'completed')}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="todo">{t('common.status.todo')}</option>
+                  <option value="inProgress">{t('common.status.inProgress')}</option>
+                  <option value="completed">{t('common.status.completed')}</option>
+                </select>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DateInput
                   label={t('project.startDate')}
-                  value={start_time}
-                  onChange={setStartDate}
-                  required
-                />
-                <DateInput
-                  label={t('project.endDate')}
                   value={end_time}
                   onChange={setEndDate}
                   required
@@ -139,10 +153,48 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
                   {tags.map((tag) => (
                     <span
                       key={tag.id}
-                      className="px-2 py-1 rounded-full text-sm"
+                      className="px-2 py-1 rounded-full text-sm relative group"
                       style={{ backgroundColor: tag.color + '20', color: tag.color }}
                     >
-                      {tag.name}
+                      {editingTagId === tag.id ? (
+                        <input
+                          type="text"
+                          value={editingTagName}
+                          onChange={(e) => setEditingTagName(e.target.value)}
+                          className="w-20 px-1 text-black rounded border-gray-300"
+                          onBlur={() => {
+                            setTags(tags.map(t => 
+                              t.id === tag.id ? { ...t, name: editingTagName } : t
+                            ));
+                            setEditingTagId(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              setTags(tags.map(t => 
+                                t.id === tag.id ? { ...t, name: editingTagName } : t
+                              ));
+                              setEditingTagId(null);
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          onClick={() => {
+                            setEditingTagId(tag.id);
+                            setEditingTagName(tag.name);
+                          }}
+                        >
+                          {tag.name}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => removeTag(tag.id)}
+                        className="absolute -top-1 -right-1 hidden group-hover:block bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                        type="button"
+                      >
+                        ×
+                      </button>
                     </span>
                   ))}
                 </div>

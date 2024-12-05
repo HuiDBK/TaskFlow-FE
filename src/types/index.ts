@@ -19,20 +19,19 @@ export interface IProject {
   project_desc: string;
   project_tags: ITag[];
   project_priority: 'low' | 'medium' | 'high';
-  project_status: 'todo' | 'in-progress' | 'completed';
+  project_status: 'todo' | 'inProgress' | 'completed';
   start_time: Date;
   end_time: Date;
 }
 
 export interface ITask {
   id: number;
-  projectId: number;
-  title: string;
-  description: string;
-  tags: ITag[];
-  priority: 'low' | 'medium' | 'high';
-  startDate: Date;
-  endDate: Date;
-  status: 'todo' | 'in-progress' | 'completed';
-  assignee?: string;
+  project_id: number;
+  task_name: string;
+  task_desc: string;
+  task_tags: ITag[];
+  task_priority: 'low' | 'medium' | 'high';
+  start_time: Date;
+  end_time: Date;
+  task_status: 'todo' | 'inProgress' | 'completed';
 }

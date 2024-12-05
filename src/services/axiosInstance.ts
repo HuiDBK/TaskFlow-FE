@@ -24,6 +24,10 @@ axiosInstance.interceptors.response.use(
   (response) => {
     if (response.data.code !== '000-0000') {
       message.error(response.data.message || '请求失败');
+      if (response.data.code === '400-0401') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
       return Promise.reject(response.data);
     }
     return response.data;

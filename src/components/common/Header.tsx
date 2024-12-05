@@ -16,7 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ onLogout }) => {
 
   function getUsernameFromLocalStorage(): string {
     const user = getCurrentUser();
-    return user.username || '';
+    return user?.username || '';
   }
 
   return (

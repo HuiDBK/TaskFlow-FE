@@ -5,7 +5,7 @@ import { authAPI } from '../../services/api';
 import { IUser } from '../../types';
 
 interface LoginFormProps {
-  onSuccess: (user?: IUser) => void;
+  onSuccess?: (user?: IUser) => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
@@ -18,7 +18,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     e.preventDefault();
     try {
       const { token, user } = await authAPI.login(username, password);
-      onSuccess(user);
+      onSuccess?.(user);
+      window.location.href = '/projects';
     } catch (err) {
       setError(t('auth.invalidCredentials'));
     }

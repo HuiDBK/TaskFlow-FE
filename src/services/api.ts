@@ -1,8 +1,8 @@
 // src/services/api.ts
 import { IProject, ITask, IUser } from '../types';
 import { userService } from './userService';
-import { projectService } from './projectService';
-import { taskService } from './taskService';
+import { ProjectFilters, projectService } from './projectService';
+import { TaskFilters, taskService } from './taskService';
 
 // Authentication APIs
 export const authAPI = {
@@ -31,8 +31,8 @@ export const authAPI = {
 };
 
 // Project APIs
-export const getProjects = async () => {
-  const response = await projectService.getProjects();
+export const getProjects = async (filters?: ProjectFilters) => {
+  const response = await projectService.getProjects(filters);
   const {total, data_list} = response.data
   return {total, projects: data_list}
 };
@@ -48,9 +48,10 @@ export const deleteProject = (id: number) =>
   projectService.deleteProject([id]);
 
 // Task APIs
-export const getTasks = async (projectId: number) => {
-  const tasks = await taskService.getTasks(projectId);
-  return { data: tasks };
+export const getTasks = async (projectId: number, filters?: TaskFilters) => {
+  const response = await taskService.getTasks(projectId, filters);
+  const {total, data_list} = response.data
+  return {total, tasks: data_list};
 };
 
 export const createTask = (projectId: number, task: Partial<ITask>) => 

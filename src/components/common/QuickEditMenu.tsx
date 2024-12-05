@@ -9,7 +9,8 @@ interface QuickEditMenuProps {
   currentValue: string;
   showDropdownIcon: boolean;
   onSelect: (value: string) => void;
-  onClick?: (e: React.MouseEvent) => void;  // 添加这一行，使用可选属性
+  onClick?: (e: React.MouseEvent) => void;
+  className?: string;
 }
 
 export const QuickEditMenu: React.FC<QuickEditMenuProps> = ({
@@ -18,6 +19,7 @@ export const QuickEditMenu: React.FC<QuickEditMenuProps> = ({
   showDropdownIcon,
   onSelect,
   onClick,
+  className,
 }) => {
   const { t } = useTranslation();
 
@@ -33,15 +35,15 @@ export const QuickEditMenu: React.FC<QuickEditMenuProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'in-progress': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'todo': return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-      default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      case 'inProgress': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      case 'todo': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      default: return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
     }
   };
 
   const options = type === 'priority'
     ? ['high', 'medium', 'low']
-    : ['todo', 'in-progress', 'completed'];
+    : ['todo', 'inProgress', 'completed'];
 
   return (
     <Menu as="div" className="relative">
@@ -49,11 +51,11 @@ export const QuickEditMenu: React.FC<QuickEditMenuProps> = ({
         onClick={onClick}
         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-1 ${
           type === 'priority' ? getPriorityColor(currentValue) : getStatusColor(currentValue)
-        }`}
+        } ${className || ''}`}
       >
         {type === 'priority'
           ? t(`common.priority.${currentValue}`)
-          : t(`common.status.${currentValue.replace('-', '')}`)
+          : t(`common.status.${currentValue}`)
         }
         {showDropdownIcon && (
           <ChevronDownIcon className="w-4 h-4" aria-hidden="true" />
@@ -75,7 +77,7 @@ export const QuickEditMenu: React.FC<QuickEditMenuProps> = ({
               >
                 {type === 'priority'
                   ? t(`common.priority.${option}`)
-                  : t(`common.status.${option.replace('-', '')}`)
+                  : t(`common.status.${option}`)
                 }
               </button>
             )}

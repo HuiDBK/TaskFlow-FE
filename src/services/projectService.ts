@@ -1,9 +1,21 @@
 import axiosInstance from './axiosInstance';
 import { IProject } from '../types';
 
+export interface ProjectFilters {
+  project_name?: string;
+  project_priority?: string;
+  project_status?: string;
+  start_time?: string;
+  end_time?: string;
+  current_page?: number;
+  page_size?: number;
+}
+
 export const projectService = {
-  getProjects: () => 
-    axiosInstance.get('/v1/projects'),
+  getProjects: (filters?: ProjectFilters) => 
+    axiosInstance.get('/v1/projects', { 
+      params: filters 
+    }),
     
   createProject: (project: Partial<IProject>) =>
     axiosInstance.post('/v1/projects', project),

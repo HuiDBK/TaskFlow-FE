@@ -29,7 +29,6 @@ export const DateInput: React.FC<DateInputProps> = ({
   );
 
   const getDateLocale = () => {
-    console.log(i18n.language);
     switch (i18n.language) {
       case 'zh':
       case 'zh-CN':

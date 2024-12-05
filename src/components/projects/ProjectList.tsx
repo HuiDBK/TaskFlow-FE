@@ -1,5 +1,5 @@
 // src/components/projects/ProjectList.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getProjects, deleteProject, updateProject } from '../../services/api';
@@ -9,6 +9,7 @@ import { EnhancedPagination } from '../common/EnhancedPagination';
 import { LayoutControl, LayoutType } from '../common/LayoutControl';
 import { SearchFilterAdvanced } from '../common/SearchFilterAdvanced';
 import { QuickEditMenu } from '../common/QuickEditMenu';
+import { ProjectFilters } from '../../services/projectService';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -16,7 +17,7 @@ export const ProjectList: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<IProject[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<IProject[]>([]);
+  const [total, setTotal] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,29 +28,46 @@ export const ProjectList: React.FC = () => {
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
-  const [tagFilter, setTagFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [startTimeFilter, setStartTimeFilter] = useState('');
+  const [endTimeFilter, setEndTimeFilter] = useState('');
 
   useEffect(() => {
-    loadProjects();
-  }, []);
+    const shouldLoadProjects = () => {
+      if (searchTerm || priorityFilter || statusFilter) return true;
+      if (startTimeFilter && endTimeFilter) return true;
+      if (!searchTerm && !priorityFilter && !statusFilter && !startTimeFilter && !endTimeFilter) return true;
+      return false;
+    };
 
-  useEffect(() => {
-    filterProjects();
-  }, [projects, searchTerm, priorityFilter, tagFilter, dateFilter]);
+    if (shouldLoadProjects()) {
+      loadProjects();
+    }
+  }, [searchTerm, priorityFilter, statusFilter, startTimeFilter, endTimeFilter, currentPage]);
 
   const loadProjects = async () => {
     try {
       setLoading(true);
       setError(null);
-      const {total, projects} = await getProjects();
+      
+      const filters: ProjectFilters = {};
+      if (searchTerm) filters.project_name = searchTerm;
+      if (priorityFilter) filters.project_priority = priorityFilter;
+      if (statusFilter) filters.project_status = statusFilter;
+      if (startTimeFilter && endTimeFilter) {
+        filters.start_time = startTimeFilter;
+        filters.end_time = endTimeFilter;
+      };
+      filters.current_page = currentPage;
+      filters.page_size = ITEMS_PER_PAGE;
+
+      const {total, projects} = await getProjects(filters);
       setProjects(projects || []);
-      setFilteredProjects(projects|| []);
+      setTotal(total);
     } catch (error) {
       console.error('Failed to load projects:', error);
       setError(t('project.loadError'));
       setProjects([]);
-      setFilteredProjects([]);
     } finally {
       setLoading(false);
     }
@@ -64,38 +82,14 @@ export const ProjectList: React.FC = () => {
     }
   };
 
-  const filterProjects = () => {
-    let filtered = [...projects];
-
-    if (searchTerm) {
-      filtered = filtered.filter(project =>
-        project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.project_desc.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const handleStatusChange = async (projectId: number, newStatus: 'todo' | 'inProgress' | 'completed') => {
+    try {
+      await updateProject(projectId, { project_status: newStatus });
+      await loadProjects();
+    } catch (error) {
+      console.error('Failed to update status:', error);
     }
-
-    if (priorityFilter) {
-      filtered = filtered.filter(project => project.project_priority === priorityFilter);
-    }
-
-    if (tagFilter) {
-      filtered = filtered.filter(project =>
-        project.project_tags.some(tag => tag.name === tagFilter)
-      );
-    }
-
-    if (dateFilter) {
-      const filterDate = new Date(dateFilter);
-      filtered = filtered.filter(project => {
-        const startDate = new Date(project.start_time);
-        const endDate = new Date(project.end_time);
-        return startDate <= filterDate && filterDate <= endDate;
-      });
-    }
-
-    setFilteredProjects(filtered);
-    setCurrentPage(1);
-  };
+  };  
 
   const handleDelete = async (id: number) => {
     try {
@@ -121,12 +115,16 @@ export const ProjectList: React.FC = () => {
   };
 
   // Get all unique tags from projects
-  const allTags = Array.from(new Set(projects.flatMap(project => project.project_tags)));
+  // const allTags = Array.from(new Set(projects.flatMap(project => project.project_tags)));
 
-  const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentProjects = filteredProjects.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  const handleReset = () => {
+    setSearchTerm('');
+    setPriorityFilter('');
+    setStartTimeFilter('');
+    setEndTimeFilter('');
+  };
 
   if (loading) {
     return (
@@ -181,11 +179,19 @@ export const ProjectList: React.FC = () => {
       </div>
 
       <SearchFilterAdvanced
-        tags={allTags}
         onSearch={setSearchTerm}
         onFilterPriority={setPriorityFilter}
-        onFilterTag={setTagFilter}
-        onFilterDate={setDateFilter}
+        onFilterStatus={setStatusFilter}
+        onFilterDate={(start, end) => {
+          setStartTimeFilter(start);
+          setEndTimeFilter(end);
+        }}
+        onReset={handleReset}
+        searchTerm={searchTerm}
+        priorityFilter={priorityFilter}
+        statusFilter={statusFilter}
+        startTimeFilter={startTimeFilter}
+        endTimeFilter={endTimeFilter}
       />
 
       <div className="flex justify-end mb-2 mt-2">
@@ -196,9 +202,9 @@ export const ProjectList: React.FC = () => {
         <ProjectForm
           project={selectedProject}
           onSubmit={async () => {
-            await loadProjects();
             setShowForm(false);
             setSelectedProject(null);
+            await loadProjects();
           }}
           onCancel={() => {
             setShowForm(false);
@@ -207,14 +213,13 @@ export const ProjectList: React.FC = () => {
         />
       )}
 
-      {filteredProjects.length === 0 ? (
+      {projects.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-md">
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
                   d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
           <h3 className="mt-2 text-lg font-medium text-gray-900">{t('project.noProjects')}</h3>
-          <p className="mt-1 text-gray-500">{t('project.createFirst')}</p>
           <button
             onClick={() => setShowForm(true)}
             className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors"
@@ -225,15 +230,29 @@ export const ProjectList: React.FC = () => {
       ) : (
         <>
           <div className={`grid ${getLayoutClass(layout)} gap-6`}>
-            {currentProjects.map((project) => (
+            {projects.map((project) => (
               <div 
                 key={project.id} 
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 
-                          transform hover:-translate-y-1 cursor-pointer overflow-hidden"
+                          transform hover:-translate-y-1 cursor-pointer overflow-hidden relative"
                 onClick={() => handleProjectClick(project)}
               >
+                <div className="absolute -left-1.5 -top-0.5">
+                  <QuickEditMenu
+                    type="status"
+                    currentValue={project.project_status}
+                    onSelect={(value) => {
+                      handleStatusChange(project.id, value as "todo" | "inProgress" | "completed");
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    showDropdownIcon={false}
+                  />
+                </div>
+
                 <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mt-2 mb-4">
                     <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">{project.project_name}</h3>
                     <QuickEditMenu
                       type="priority"
@@ -245,7 +264,7 @@ export const ProjectList: React.FC = () => {
                         e.stopPropagation(); // 阻止事件冒泡到父级div
                       }}
                       showDropdownIcon={true} // 显示下拉图标
-                    />
+                      />
                   </div>
                   <p className="text-gray-600 mb-4 line-clamp-3">{project.project_desc}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
