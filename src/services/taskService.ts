@@ -2,6 +2,7 @@ import axiosInstance from './axiosInstance';
 import { ITask } from '../types';
 
 export interface TaskFilters {
+  project_ids: string;
   task_name?: string;
   task_priority?: string;
   task_status?: string;
@@ -12,8 +13,8 @@ export interface TaskFilters {
 }
 
 export const taskService = {
-  getTasks: (projectId: number, filters?: TaskFilters) =>
-    axiosInstance.get(`/v1/projects/${projectId}/tasks`, {
+  getTasks: (filters?: TaskFilters) =>
+    axiosInstance.get(`/v1/projects/tasks`, {
       params: filters
     }),
     

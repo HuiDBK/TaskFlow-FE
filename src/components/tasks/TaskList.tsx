@@ -54,7 +54,7 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
       setLoading(true);
       setError(null);
 
-      const filters: TaskFilters = {};
+      const filters: TaskFilters = {project_ids: projectId.toString()};
       if (searchTerm) filters.task_name = searchTerm;
       if (priorityFilter) filters.task_priority = priorityFilter;
       if (statusFilter) filters.task_status = statusFilter;
@@ -65,7 +65,7 @@ export const TaskList: React.FC<TaskListProps> = ({ projectId }) => {
       filters.current_page = currentPage;
       filters.page_size = TASKS_PER_PAGE;
 
-      const { total, tasks } = await getTasks(projectId, filters);
+      const { total, tasks } = await getTasks(filters);
       setTotalTasks(total);
       setTasks(tasks || []);
     } catch (error) {

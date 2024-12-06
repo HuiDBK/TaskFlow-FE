@@ -5,7 +5,7 @@ import { setAuthToken, clearAuthToken } from './api';
 export const login = async (username: string, password: string) => {
   try {
     const { token, user } = await mockAuthService.login(username, password);
-    setAuthToken(token, user);
+    setAuthToken(token);
     return { token, user };
   } catch (error) {
     throw error;
@@ -15,7 +15,7 @@ export const login = async (username: string, password: string) => {
 export const register = async (username: string, password: string, email?: string, phone?: string) => {
   try {
     const { token, user } = await mockAuthService.register(username, password, email, phone);
-    setAuthToken(token, user);
+    setAuthToken(token);
     return { token, user };
   } catch (error) {
     throw error;
@@ -31,7 +31,7 @@ export const githubLogin = () => {
 export const handleGithubCallback = async (code: string) => {
   try {
     const { token, user } = await mockAuthService.githubLogin(code);
-    setAuthToken(token, user);
+    setAuthToken(token);
     return { token, user };
   } catch (error) {
     throw error;

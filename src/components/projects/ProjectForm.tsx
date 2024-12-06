@@ -118,8 +118,14 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onC
                 </select>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DateInput
+                  label={t('common.startDate')}
+                  value={start_time}
+                  onChange={setStartDate}
+                  required
+                />
                 <DateInput
-                  label={t('project.startDate')}
+                  label={t('common.endDate')}
                   value={end_time}
                   onChange={setEndDate}
                   required

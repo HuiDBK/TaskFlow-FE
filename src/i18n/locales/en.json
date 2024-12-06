@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Task Flow"
+    "title": "TaskFlow"
   },
   "common": {
     "projects": "Projects",
@@ -50,8 +50,13 @@
     "password": "Password",
     "email": "Email",
     "phone": "Phone",
+    "inputPassword": "Please enter a 6-12 digit password",
+    "optional": "Optional",
+    "invalidCredentials": "Invalid username or password",
+    "registerFailed": "Registration failed",
     "alreadyHaveAccount": "Already have an account?",
-    "dontHaveAccount": "Don't have an account?"
+    "dontHaveAccount": "Don't have an account?",
+    "slogan": "Make task management simple"
   },
   "project": {
     "title": "Title",

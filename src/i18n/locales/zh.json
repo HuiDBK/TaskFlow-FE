@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "任务管理系统"
+    "title": "TaskFlow"
   },
   "common": {
     "projects": "项目总览",
@@ -50,8 +50,13 @@
     "password": "密码",
     "email": "邮箱",
     "phone": "手机号",
+    "inputPassword": "请输入6-12位密码",
+    "optional": "可选",
+    "invalidCredentials": "用户名或密码错误",
+    "registerFailed": "注册失败",
     "alreadyHaveAccount": "已有账号？",
-    "dontHaveAccount": "没有账号？"
+    "dontHaveAccount": "没有账号？",
+    "slogan": "让任务管理变得简单"
   },
   "project": {
     "title": "项目标题",

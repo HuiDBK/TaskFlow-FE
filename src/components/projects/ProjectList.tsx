@@ -155,7 +155,12 @@ export const ProjectList: React.FC = () => {
         <h2 className="text-3xl font-bold text-gray-900">{t('common.projects')}</h2>
         <div className="flex space-x-4">
           <button
-            onClick={() => navigate('/gantt')}
+            onClick={() => navigate('/gantt', { 
+              state: { 
+                projects: projects,
+                total: total
+              }
+            })}
             className="bg-indigo-500 text-white px-6 py-2 rounded-md hover:bg-indigo-600 
                      transition-colors duration-200 flex items-center space-x-2 shadow-md"
           >

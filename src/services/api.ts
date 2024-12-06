@@ -17,14 +17,14 @@ export const authAPI = {
   register: async (username: string, password: string, email?: string, phone?: string) => {
     const response = await userService.register(username, password, email, phone);
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+      setAuthToken(response.data.token);
     }
     return response.data;
   },
   githubLogin: async (code: string) => {
     const response = await userService.githubLogin(code);
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+      setAuthToken(response.data.token);
     }
     return response.data;
   },
@@ -48,8 +48,8 @@ export const deleteProject = (id: number) =>
   projectService.deleteProject([id]);
 
 // Task APIs
-export const getTasks = async (projectId: number, filters?: TaskFilters) => {
-  const response = await taskService.getTasks(projectId, filters);
+export const getTasks = async (filters?: TaskFilters) => {
+  const response = await taskService.getTasks(filters);
   const {total, data_list} = response.data
   return {total, tasks: data_list};
 };

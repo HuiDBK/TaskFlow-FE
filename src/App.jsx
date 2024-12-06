@@ -7,6 +7,7 @@ import { ProjectList } from './components/projects/ProjectList';
 import { ProjectDetail } from './components/projects/ProjectDetail';
 import { GanttDashboard } from './components/dashboard/GanttDashboard';
 import { Header } from './components/common/Header';
+import { t } from 'i18next';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -19,19 +20,19 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-4xl">
           {showRegister ? (
             <>
               <RegisterForm onSuccess={() => {
                 setIsAuthenticated(true);
               }} />
               <p className="mt-4 text-center text-gray-600">
-                Already have an account?{' '}
+                {t('auth.alreadyHaveAccount')}
                 <button
                   onClick={() => setShowRegister(false)}
                   className="text-blue-500 hover:text-blue-600 font-medium transition-colors"
                 >
-                  Login
+                  {t('auth.login')}
                 </button>
               </p>
             </>
@@ -41,12 +42,12 @@ function App() {
                 setIsAuthenticated(true);
               }} />
               <p className="mt-4 text-center text-gray-600">
-                Don't have an account?{' '}
+                {t('auth.dontHaveAccount')}
                 <button
                   onClick={() => setShowRegister(true)}
                   className="text-blue-500 hover:text-blue-600 font-medium transition-colors"
                 >
-                  Register
+                  {t('auth.register')}
                 </button>
               </p>
             </>

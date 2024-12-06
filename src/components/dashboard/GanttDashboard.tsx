@@ -4,19 +4,43 @@ import { getProjects, getTasks } from '../../services/api';
 import { IProject, ITask } from '../../types';
 import { GanttChart } from '../tasks/GanttChart';
 import { t } from 'i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const GanttDashboard: React.FC = () => {
-  const [projects, setProjects] = useState<IProject[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [projects, setProjects] = useState<IProject[]>([]);
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'projects' | 'tasks'>('projects');
 
   useEffect(() => {
-    loadData();
-  }, []);
+    // 如果有传入的项目数据，直接使用
+    if (location.state?.projects) {
+      setProjects(location.state.projects);
+      loadTasks(location.state.projects);
+    } else {
+      // 否则重新加载数据
+      loadData();
+    }
+  }, [location.state]);
+
+  const loadTasks = async (projectsList: IProject[]) => {
+    try {
+      setLoading(true);
+      const projectIds = projectsList.map(project => project.id);
+      if (projectIds.length > 0) {
+        const {tasks: loadedTasks} = await getTasks({project_ids: projectIds.join(','), page_size: 10});
+        setAllTasks(loadedTasks);
+      }
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+      setError('Failed to load tasks. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -27,11 +51,14 @@ export const GanttDashboard: React.FC = () => {
       const {projects: loadedProjects} = await getProjects({page_size: 6});
       setProjects(loadedProjects);
 
-      // Load tasks for all projects
-      const tasksPromises = loadedProjects.map(project => getTasks(project.id));
-      const tasksResponses = await Promise.all(tasksPromises);
-      const allLoadedTasks = tasksResponses.flatMap(response => response.tasks || []);
-      setAllTasks(allLoadedTasks);
+      // Load tasks for all projects(max 10)
+      const projectIds = loadedProjects.map(project => project.id);
+      if (projectIds.length > 0) {
+        const {tasks: loadedTasks} = await getTasks({project_ids: projectIds.join(','), page_size: 10});
+        setAllTasks(loadedTasks);
+      } else {
+        setAllTasks([]);
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
       setError('Failed to load data. Please try again later.');
