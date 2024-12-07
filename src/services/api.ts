@@ -3,6 +3,7 @@ import { IProject, ITask, IUser } from '../types';
 import { userService } from './userService';
 import { ProjectFilters, projectService } from './projectService';
 import { TaskFilters, taskService } from './taskService';
+import Cookies from 'js-cookie';
 
 // Authentication APIs
 export const authAPI = {
@@ -21,12 +22,13 @@ export const authAPI = {
     }
     return response.data;
   },
-  githubLogin: async (code: string) => {
-    const response = await userService.githubLogin(code);
-    if (response.data.token) {
-      setAuthToken(response.data.token);
-    }
-    return response.data;
+  githubLogin: async () => {
+    const query = new URLSearchParams({
+      client_id: import.meta.env.VITE_GITHUB_CLIENT_ID,
+      scope: 'user:email',
+    })
+    const redirect_uri = `${import.meta.env.VITE_GITHUB_AUTH_URL}?${query.toString()}`;
+    window.location.href = redirect_uri;
   },
 };
 
@@ -73,7 +75,7 @@ export const clearAuthToken = () => {
 };
 
 export const getCurrentUser = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || Cookies.get('oauth_token');
   if (!token) return null;
   
   try {

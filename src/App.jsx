@@ -8,11 +8,12 @@ import { ProjectDetail } from './components/projects/ProjectDetail';
 import { GanttDashboard } from './components/dashboard/GanttDashboard';
 import { Header } from './components/common/Header';
 import { t } from 'i18next';
+import Cookies from 'js-cookie';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // 初始化时检查 localStorage 中是否存在有效的 token
-    const token = localStorage.getItem('token');
+    // 初始化时检查 localStorage、cookie 中是否存在有效的 token
+    const token = localStorage.getItem('token') || Cookies.get('oauth_token');
     return !!token;
   });
   const [showRegister, setShowRegister] = useState(false);
@@ -62,6 +63,7 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Header onLogout={() => {
           localStorage.removeItem('token');
+          Cookies.remove('oauth_token');
           setIsAuthenticated(false);
         }} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pt-16">

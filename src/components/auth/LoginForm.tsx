@@ -17,8 +17,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { token, user } = await authAPI.login(username, password);
-      onSuccess?.(user);
+      const { token } = await authAPI.login(username, password);
+      onSuccess?.();
       window.location.href = '/projects';
     } catch (err) {
       setError(t('auth.invalidCredentials'));
@@ -73,7 +73,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             </button>
           </form>
           <button
-            onClick={() => authAPI.githubLogin('')}
+            onClick={() => authAPI.githubLogin()}
             className="w-full mt-4 bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 flex items-center justify-center space-x-2"
           >
             <svg

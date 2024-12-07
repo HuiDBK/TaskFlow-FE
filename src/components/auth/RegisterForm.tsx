@@ -18,8 +18,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const {token, user} = await authAPI.register(username, password, email, phone);
-      onSuccess?.(user);
+      const {token} = await authAPI.register(username, password, email, phone);
+      onSuccess?.();
       window.location.href = '/projects';
     } catch (err) {
       setError(t('auth.registerFailed'));
